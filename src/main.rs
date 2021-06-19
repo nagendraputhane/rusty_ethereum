@@ -1,86 +1,55 @@
 #![allow(dead_code)]
 
-#[derive (Debug, Copy, Clone, PartialEq, Eq)]
-enum VMError {
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+enum VMError { //list of all errors for the stack, 
     UNDERFLOW,
 }
 
-#[derive(Default)]
-struct Word(u32); // we need a type for 256 bit words
+#[derive(Debug, Default)]
+struct Word(u32); //stack elements are 256 bit values, so use 32 octets
 
 #[derive(Default)]
 struct Stack {
-    pub values: Vec<Word>, // variable sized vector
+    pub values: Vec<Word>, //values is a variable-sized Vec
 }
-//if you wnt to put methods inside them, use impl
-
-    //pub fn add (&mut self) -> Result<(), VMError>{
-        //instead of returning nothing for add, 
-        //we can return nothing if its a success, -< () zero sized tuble
-        //else return an error
-
-        //access to inside variable
-        // & : reference, &mut : mutable reference
-        // things are immutable by default
-
-        // pub fn pop (&mut self) -> Option<T> // It gives a value T or not
-        // so we should decide what to do if value is not returned
-        //let a = self.values.pop().ok_or(VMError::UNDERFLOW)?; 
-        //? : if its a success case, return it. Or return the error
-        //let b = self.values.pop().ok_or(VMError::UNDERFLOW)?;
-        //self.value.push(Word(a.0 + b.0));
-        //Ok(()) //return success
-    //}
 
 // instruction class
-#[derive (Debug, Copy, Clone, PartialEq, Eq)]
-enum Instruction {
-    Add(), // Add is parameter with no parameters
-    Push1(u8), //named tuple that takes u8
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+enum Instruction { // the different instructions to be executed
+    Add(), 
+    Push1(u8),
 }
 
-fn execute(stack: &mut Stack, instruction: &Instruction) -> Result<(), VMError> {
-    println!("{:?}", instruction);
+fn execute(stack: &mut Stack, instruction: &Instruction) -> Result<(), VMError> { //instruction is immutable. So consider dereferencing the borrow as &
     match instruction {
         Instruction::Add() => {
-            let a = stack.values.pop().ok_or(VMError::UNDERFLOW)?; 
+            let a = stack.values.pop().ok_or(VMError::UNDERFLOW)?; //if there is error in popping, then it is an underflow, so handle it.
             let b = stack.values.pop().ok_or(VMError::UNDERFLOW)?;
             stack.values.push(Word(a.0 + b.0));
         }
-        Instruction::Push1(value) => stack.values.push(Word(*value as u32)),
+        Instruction::Push1(value) => stack.values.push(Word(*value as u32)), //casting `&u8` as `u32` is invalid, so dereference the expression: `*value
     }
     Ok(())
 }
 
-fn playground () -> Result<(), VMError> {
-    let mut stack = Stack::default();
-    // we made a stack
-    // next create a instruction vecotr with psuh1, push1, add
-    let instructions = vec![
-        Instruction::Push1(1),
+fn playground() -> Result<(), VMError> { //Result is a type that represents either success (Ok) or failure (Err)
+    let mut stack = Stack::default(); //Default value is []. i.e., empty
+
+    let instructions = vec![ //The instructions are push 1 and push 2, then add
+        Instruction::Push1(1), //Instruction is an Enum
         Instruction::Push1(2),
         Instruction::Add(),
     ];
 
-    //pop in a loop
-    // while instruction is not empty, keep popping
-    for instruction in instructions.iter() {
-        execute (&mut stack, instruction)?;
+    for instruction in instructions.iter() { // for each instruction
+        execute(&mut stack, instruction)?; //insead of taking the return to any variable, you can use the ? to check if the return is a success or error
     }
-    Ok(())
+    Ok(()) //return  NULL tuple Ok(()) if successful
 }
 
 fn main() {
     match playground() {
-        Ok(()) => println!("Done!"),
+        Ok(()) => println!("Done!"), //if all the instructions are executed without errors
         Err(error) => println!("Error: {:?}", error),
     }
 }
-
-// MVP
-// Take an instruction input buff
-// pop in a loop
-// execute
-
-// Add 0x01
-// Push1 0x60
