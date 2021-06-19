@@ -20,11 +20,12 @@ enum Instruction { // the different instructions to be executed
     Push1(u8),
 }
 
+//execute is to execute the instructions
 fn execute(stack: &mut Stack, instruction: &Instruction) -> Result<(), VMError> { //instruction is immutable. So consider dereferencing the borrow as &
     match instruction {
         Instruction::Add() => {
-            let a = stack.values.pop().ok_or(VMError::UNDERFLOW)?; //if there is error in popping, then it is an underflow, so handle it.
-            let b = stack.values.pop().ok_or(VMError::UNDERFLOW)?;
+            let a = stack.values.pop().ok_or(VMError::UNDERFLOW)?; //pop returns you an Option
+            let b = stack.values.pop().ok_or(VMError::UNDERFLOW)?; //if there is error in popping, then it is an underflow, so handle it.
             stack.values.push(Word(a.0 + b.0));
         }
         Instruction::Push1(value) => stack.values.push(Word(*value as u32)), //casting `&u8` as `u32` is invalid, so dereference the expression: `*value
@@ -32,8 +33,9 @@ fn execute(stack: &mut Stack, instruction: &Instruction) -> Result<(), VMError> 
     Ok(())
 }
 
+//playground is for passing all the instructions
 fn playground() -> Result<(), VMError> { //Result is a type that represents either success (Ok) or failure (Err)
-    let mut stack = Stack::default(); //Default value is []. i.e., empty
+    let mut stack = Stack::default(); //zero initialize the structure
 
     let instructions = vec![ //The instructions are push 1 and push 2, then add
         Instruction::Push1(1), //Instruction is an Enum
